@@ -1,8 +1,8 @@
-# IT admin toolkit v2
+# IT admin toolkit
 
 En enkel PowerShell-toolkit för daglig Microsoft 365-administration.
 
-Målet med v2 är:
+Målet med toolkit är:
 
 - tydlig uppdelning mellan installation, anslutning och day-2 scripts
 - enkel lokal konfig per tenant
@@ -56,13 +56,13 @@ Valfritt:
 
 ## Varför dessa moduler
 
-Exchange Online PowerShell använder modern auth via `Connect-ExchangeOnline`. Microsoft Graph PowerShell använder `Connect-MgGraph` och kräver att du ansluter innan Graph-cmdlets körs. Teams-modulen använder `Connect-MicrosoftTeams`. PnP PowerShell är cross-platform och körs på Windows, Linux och macOS, men är community-driven och inte en Microsoft-stödd modul. citeturn23search105turn23search93turn23search99turn23search104turn24search140turn24search142
+Exchange Online PowerShell använder modern auth via `Connect-ExchangeOnline`. Microsoft Graph PowerShell använder `Connect-MgGraph` och kräver att du ansluter innan Graph-cmdlets körs. Teams-modulen använder `Connect-MicrosoftTeams`. PnP PowerShell är cross-platform och körs på Windows, Linux och macOS, men är community-driven och inte en Microsoft-stödd modul. 
 
-För din Mac-miljö är PnP-spåret enklare än att luta sig på SharePoint Online Management Shell, eftersom dokumentationen för Microsofts SharePoint Online PowerShell i PowerShell 7 beskriver `-UseWindowsPowerShell` i Windows-kontext. citeturn16search81
+För din Mac-miljö är PnP-spåret enklare än att luta sig på SharePoint Online Management Shell, eftersom dokumentationen för Microsofts SharePoint Online PowerShell i PowerShell 7 beskriver `-UseWindowsPowerShell` i Windows-kontext.
 
 ## Enterprise-baseline som täcks
 
-v2 täcker det som normalt behövs för en admin i en Microsoft 365 enterprise-miljö:
+Toolkit täcker det som normalt behövs för en admin i en Microsoft 365 enterprise-miljö:
 
 - Exchange Online admin
 - Entra ID / Graph-uppslag
@@ -71,7 +71,7 @@ v2 täcker det som normalt behövs för en admin i en Microsoft 365 enterprise-m
 - Teams anslutning och grundkontroll
 - SharePoint Online via PnP PowerShell
 
-Microsoft Learn dokumenterar att `Get-MgDeviceManagementManagedDevice` returnerar managed devices och att `Get-MgDeviceManagementWindowsAutopilotDeviceIdentity` returnerar Windows Autopilot device identities. För Autopilot anger dokumentationen också de delegerade behörigheterna `DeviceManagementServiceConfig.Read.All` eller `DeviceManagementServiceConfig.ReadWrite.All`. Microsoft Learn dokumenterar också att `Get-MgUser`, `Get-MgGroup` och `Get-MgGroupMember` hämtar users, groups respektive direkta gruppmedlemmar. citeturn24search120turn24search134turn24search135turn24search127turn24search153turn24search154
+Microsoft Learn dokumenterar att `Get-MgDeviceManagementManagedDevice` returnerar managed devices och att `Get-MgDeviceManagementWindowsAutopilotDeviceIdentity` returnerar Windows Autopilot device identities. För Autopilot anger dokumentationen också de delegerade behörigheterna `DeviceManagementServiceConfig.Read.All` eller `DeviceManagementServiceConfig.ReadWrite.All`. Microsoft Learn dokumenterar också att `Get-MgUser`, `Get-MgGroup` och `Get-MgGroupMember` hämtar users, groups respektive direkta gruppmedlemmar. 
 
 ## Första uppsättning
 
@@ -93,7 +93,7 @@ pwsh ./validate.ps1
 
 ## PnP-notering
 
-PnP PowerShell kräver att du använder en egen Entra app registration för interaktiv auth. Lägg client id i `config.ps1` som `PnPClientId`. Det är uttryckligen beskrivet i PnP-dokumentationen att den gamla multi-tenant PnP Management Shell-appen inte längre är vägen fram. citeturn23search111turn23search117turn24search142
+PnP PowerShell kräver att du använder en egen Entra app registration för interaktiv auth. Lägg client id i `config.ps1` som `PnPClientId`. Det är uttryckligen beskrivet i PnP-dokumentationen att den gamla multi-tenant PnP Management Shell-appen inte längre är vägen fram. 
 
 ## Exempel på användning
 
