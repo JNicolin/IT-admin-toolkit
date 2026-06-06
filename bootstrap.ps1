@@ -38,4 +38,4 @@ if ($IncludeBetaGraph) {
     Ensure-Module -Name 'Microsoft.Graph.Beta.DeviceManagement.Enrollment'
 }
 
-Write-Ok 'Bootstrap completed'
+Write-Ok 'Bootstrap completed, all required modules are installed and imported.'
