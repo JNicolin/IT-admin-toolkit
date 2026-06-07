@@ -81,63 +81,58 @@ This toolkit covers what is typically needed for a Microsoft 365 enterprise admi
 
 ---
 
-## Initial setup (first time)
-
-1. Copy config template
-2. Fill in values
-3. Install modules
-4. Connect
-5. Validate
-
-```powershell
-Copy-Item ./config.sample.ps1 ./config.ps1
-pwsh ./bootstrap.ps1
-pwsh ./connect.ps1 -ShowCommands
-pwsh ./validate.ps1
-```
---- 
-
 ## Setup on a new device
 
-1. Clone the repo
+### 1. Clone the repo
 
-   - git clone https://github.com/JNicolin/IT-admin-toolkit.git  
-   - cd IT-admin-toolkit
+ ```zsh
+ git clone https://github.com/JNicolin/IT-admin-toolkit.git  
+ cd IT-admin-toolkit
+ ```
 
-2. Create local config
+### 2. Create local config
 
-     Copy config file:
+- Copy config file:
 
-     - cp config.sample.ps1 config.ps1
+ ```zsh
+ cp config.sample.ps1 config.ps1
+ ```
 
-     Edit config.ps1 and fill in:
+- Edit config.ps1 and fill in:
 
-     - TenantId    = 'your-tenant-id'  
-     - AdminUpn    = 'your-admin-upn'  
-     - PnPClientId = 'your-app-id'
+   - TenantId    = 'your-tenant-id'  
+   - AdminUpn    = 'your-admin-upn'  
+   - PnPClientId = 'your-app-id'
 
-3. Install modules
+### 3. Install modules
 
-    - pwsh ./bootstrap.ps1
+```zsh 
+pwsh ./bootstrap.ps1 
+```
 
-4. Connect to services
+### 4. Connect to services
 
-   - pwsh ./connect.ps1
+```zsh
+pwsh ./connect.ps1
+```
 
-5. Validate setup
+### 5. Validate setup
 
-   - pwsh ./validate.ps1
+```zsh
+pwsh ./validate.ps1
+```
 
-   This will authenticate and connect:
+- This will authenticate and connect:
 
-     - Exchange Online  
-     - Microsoft Graph  
-     - Microsoft Teams  
-     - SharePoint (PnP)
+  - Exchange Online  
+  - Microsoft Graph  
+  - Microsoft Teams  
+  - SharePoint (PnP)
 
-6. Daily usage
+### 6. Daily usage
 
-    For daily usage:
+- Initiate daily usage by typing this command, which will connect the most needed components of Powershell
 
-     - pwsh ./connect.ps1
+```zsh
+pwsh ./connect.ps1
 ```
