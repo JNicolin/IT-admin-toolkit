@@ -64,7 +64,50 @@ Exchange Online PowerShell uses modern authentication via `Connect-ExchangeOnlin
 Microsoft Graph PowerShell uses `Connect-MgGraph` and requires authentication before running cmdlets.  
 Teams uses `Connect-MicrosoftTeams`.  
 
-PnP PowerShell is cross-platform (Windows, macOS, Linux) and is the recommended way to work with SharePoint in PowerShell 7 environments, especially on Mac.
+---
+
+
+## PnP PowerShell
+
+PnP PowerShell is used for SharePoint administration and automation.  
+It provides a modern, cross-platform way of working with SharePoint Online, especially from PowerShell 7 and macOS where legacy modules are limited.
+
+It is required in this toolkit for:
+
+- accessing SharePoint site data  
+- managing site context and structure  
+- enabling automation scenarios  
+
+### Setup PnP (one-time)
+
+PnP requires your own Entra ID app registration for authentication.
+
+Run the following command in PowerShell:
+
+```zsh
+Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP.PowerShell" -Tenant <your-tenant-id>
+```
+
+A browser window will open:
+
+- sign in with your admin account  
+- accept permissions  
+
+After completion, you will get:
+
+- Azure App ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+
+Copy this value and add it to config.ps1:
+
+- PnPClientId = 'your-app-id'
+
+### Usage
+
+PnP is automatically used when running:
+
+```zsh
+pwsh ./connect.ps1
+```
 
 ---
 
@@ -92,25 +135,31 @@ This toolkit covers what is typically needed for a Microsoft 365 enterprise admi
 
 ### 2. Create local config
 
-- Copy config file:
+Copy config file:
 
  ```zsh
  cp config.sample.ps1 config.ps1
  ```
 
-- Edit config.ps1 and fill in:
+Edit config.ps1 and fill in:
 
-   - TenantId    = 'your-tenant-id'  
-   - AdminUpn    = 'your-admin-upn'  
-   - PnPClientId = 'your-app-id'
+- TenantId    = 'your-tenant-id'  
+- AdminUpn    = 'your-admin-upn'  
+- PnPClientId = 'your-app-id'
+
+Note: If you have not created a PnP app registration yet, follow the steps in the PnP PowerShell section above before continuing.
 
 ### 3. Install modules
+
+This is a one time per device action. Installation of modules. No need to run it again after a device restart. 
 
 ```zsh 
 pwsh ./bootstrap.ps1 
 ```
 
 ### 4. Connect to services
+
+This action shall be completed at each new session. After a restart of device or login of user. 
 
 ```zsh
 pwsh ./connect.ps1
@@ -122,17 +171,79 @@ pwsh ./connect.ps1
 pwsh ./validate.ps1
 ```
 
-- This will authenticate and connect:
+This will authenticate and connect:
 
-  - Exchange Online  
-  - Microsoft Graph  
-  - Microsoft Teams  
-  - SharePoint (PnP)
+- Exchange Online  
+- Microsoft Graph  
+- Microsoft Teams  
+- SharePoint (PnP)
 
-### 6. Daily usage
+---
+## Daily workflow
 
-- Initiate daily usage by typing this command, which will connect the most needed components of Powershell
+Use this workflow for day-to-day usage of the toolkit.
+
+### 1. Open the repository
+
+Navigate to your local repository:
+
+```zsh
+cd IT-admin-toolkit
+```
+
+---
+
+### 2. Update from GitHub (recommended)
+
+Pull the latest changes before starting work:
+
+```zsh
+git pull
+````
+
+---
+
+### 3. Connect to services
+
+Start your session:
 
 ```zsh
 pwsh ./connect.ps1
 ```
+
+This will authenticate and connect:
+
+- Exchange Online  
+- Microsoft Graph  
+- Microsoft Teams  
+- SharePoint (PnP)
+
+---
+
+### 4. Run scripts
+
+Examples:
+
+```zsh
+pwsh ./scripts/autopilot.ps1 -ListAutopilotDevices  
+pwsh ./scripts/entra.ps1 -ListUsers  
+pwsh ./scripts/exchange.ps1 -ShowAuditStatus  
+```
+
+---
+
+### 5. Save changes (if you modify scripts)
+
+```zsh
+git add .  
+git commit -m "Describe your change"  
+git push  
+```
+
+---
+
+### Notes
+
+- bootstrap.ps1 is only needed on first setup or when adding modules  
+- connect.ps1 should be run for each new session  
+- config.ps1 is local and should not be committed to GitHub. It is therefor noted in the .gitignore file
