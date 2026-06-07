@@ -1,12 +1,27 @@
+
 # IT admin toolkit
 
-A simple PowerShell toolkit for daily Microsoft 365 administration.
+A PowerShell toolkit for practical Microsoft 365 administration.
+
+This repository is intended for IT administrators who want a simple and repeatable way to:
+
+- connect to Microsoft 365 services
+- run common administrative tasks
+- reuse and extend scripts over time
+
+Instead of writing scripts from scratch each time, this toolkit provides a structured starting point that can be used across devices and environments.
 
 The goal of the toolkit is:
 
-- clear separation between installation, connection, and day‑2 scripts  
+- clear separation between installation, connection, and operational scripts  
 - simple per‑tenant local configuration  
 - easy to extend without being locked into a heavy framework  
+
+In this context:
+
+- installation (bootstrap) handles required modules  
+- connection (connect) handles authentication and sessions  
+- operational scripts ("day‑2 scripts") are the scripts you use for actual work (e.g. Autopilot queries, user lookups, reporting, troubleshooting)
 
 ## Structure
 
@@ -40,8 +55,6 @@ The goal of the toolkit is:
 - `scripts/sharepoint.ps1`  
   Basic PnP-based SharePoint site context and site information.
 
----
-
 ## Base modules
 
 The toolkit relies on:
@@ -56,16 +69,25 @@ Optional:
 - Az.Accounts  
 - Microsoft.Graph.Beta.DeviceManagement.Enrollment  
 
----
-
 ## Why these modules
 
-Exchange Online PowerShell uses modern authentication via `Connect-ExchangeOnline`.  
-Microsoft Graph PowerShell uses `Connect-MgGraph` and requires authentication before running cmdlets.  
-Teams uses `Connect-MicrosoftTeams`.  
+The modules in this toolkit are selected to cover the core administrative areas in a Microsoft 365 environment, using modern and supported authentication methods.
 
----
+Each module is responsible for a specific workload:
 
+- ExchangeOnlineManagement is used for Exchange Online administration such as audit logging, mailbox configuration, and mail flow.  
+  It uses modern authentication via Connect-ExchangeOnline and provides access to Exchange-specific cmdlets that are not available in Microsoft Graph.
+
+- Microsoft Graph PowerShell is used for identity, devices, and directory data.  
+  It connects using Connect-MgGraph and provides a unified API for working with users, groups, and Intune-managed devices across Microsoft 365.
+
+- MicrosoftTeams is used for Teams-specific administration, such as tenant settings and policy management.  
+  It connects using Connect-MicrosoftTeams and exposes cmdlets that are not fully available through Graph.
+
+- PnP.PowerShell is used for SharePoint Online administration and automation.  
+  It provides a modern, cross-platform way to work with SharePoint that is better suited for PowerShell 7 and macOS than legacy modules.
+
+Together, these modules provide coverage across the main administrative workloads in Microsoft 365 while keeping responsibilities clearly separated.
 
 ## PnP PowerShell
 
@@ -109,20 +131,16 @@ PnP is automatically used when running:
 pwsh ./connect.ps1
 ```
 
----
-
 ## Enterprise baseline covered
 
-This toolkit covers what is typically needed for a Microsoft 365 enterprise admin:
+This toolkit provides coverage across the main administrative workloads in a Microsoft 365 environment:
 
-- Exchange Online administration  
+- Exchange Online administration and auditing
 - Entra ID / Graph queries  
 - Intune managed devices via Graph  
 - Windows Autopilot device identities via Graph  
 - Teams connectivity and validation  
 - SharePoint Online via PnP PowerShell  
-
----
 
 ## Setup on a new device
 
@@ -178,7 +196,6 @@ This will authenticate and connect:
 - Microsoft Teams  
 - SharePoint (PnP)
 
----
 ## Daily workflow
 
 Use this workflow for day-to-day usage of the toolkit.
@@ -191,17 +208,13 @@ Navigate to your local repository:
 cd IT-admin-toolkit
 ```
 
----
-
 ### 2. Update from GitHub (recommended)
 
 Pull the latest changes before starting work:
 
 ```zsh
 git pull
-````
-
----
+```
 
 ### 3. Connect to services
 
@@ -218,8 +231,6 @@ This will authenticate and connect:
 - Microsoft Teams  
 - SharePoint (PnP)
 
----
-
 ### 4. Run scripts
 
 Examples:
@@ -230,8 +241,6 @@ pwsh ./scripts/entra.ps1 -ListUsers
 pwsh ./scripts/exchange.ps1 -ShowAuditStatus  
 ```
 
----
-
 ### 5. Save changes (if you modify scripts)
 
 ```zsh
@@ -239,9 +248,6 @@ git add .
 git commit -m "Describe your change"  
 git push  
 ```
-
----
-
 ### Notes
 
 - bootstrap.ps1 is only needed on first setup or when adding modules  
