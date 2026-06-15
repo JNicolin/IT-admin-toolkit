@@ -1,41 +1,60 @@
-
 # IT admin toolkit
 
-A PowerShell toolkit for practical Microsoft 365 administration.
+A practical PowerShell toolkit for Microsoft 365 administration.
 
-This repository is intended for IT administrators who want a simple and repeatable way to:
+This repository gives IT administrators a simple and repeatable way to:
 
 - connect to Microsoft 365 services
-- run common administrative tasks
+- run common operational tasks
 - reuse and extend scripts over time
+- keep setup and daily usage consistent across devices
 
-Instead of writing scripts from scratch each time, this toolkit provides a structured starting point that can be used across devices and environments.
+Instead of writing scripts from scratch each time, this toolkit provides a clean starting point for installation, connection, and operational work.
 
-The goal of the toolkit is:
+## Quick start
 
-- clear separation between installation, connection, and operational scripts  
-- simple per‑tenant local configuration  
-- easy to extend without being locked into a heavy framework  
+### First-time setup
 
-In this context:
+```powershell
+Copy-Item ./config.sample.ps1 ./config.ps1
+pwsh ./bootstrap.ps1
+pwsh ./connect.ps1
+pwsh ./validate.ps1
+```
 
-- installation (bootstrap) handles required modules  
-- connection (connect) handles authentication and sessions  
-- operational scripts ("day‑2 scripts") are the scripts you use for actual work (e.g. Autopilot queries, user lookups, reporting, troubleshooting)
+### Daily usage
 
-## Structure
+```powershell
+pwsh
+. ./connect.ps1
+./scripts/entra.ps1 -ListUsers
+```
+
+## Design principles
+
+- clear separation between installation, connection, and operational scripts
+- simple per-tenant local configuration
+- easy to extend without heavy frameworks
+
+In this toolkit:
+
+- **bootstrap** installs required modules
+- **connect** establishes authenticated sessions
+- **operational scripts** perform actual admin work such as lookups, validation, export, and troubleshooting
+
+## Repository structure
 
 - `bootstrap.ps1`  
-  Installs base modules.
+  Installs required modules.
 
 - `connect.ps1`  
-  Connects to Exchange Online, Microsoft Graph, Teams and PnP.
+  Connects to Exchange Online, Microsoft Graph, Teams, and PnP.
 
 - `validate.ps1`  
-  Runs quick checks to verify that the session is working.
+  Verifies that sessions are working.
 
 - `disconnect.ps1`  
-  Disconnects the sessions.
+  Disconnects active sessions.
 
 - `common.ps1`  
   Shared helper functions.
@@ -44,212 +63,307 @@ In this context:
   Template for tenant-specific configuration. Copy to `config.ps1` locally.
 
 - `scripts/autopilot.ps1`  
-  Intune / Autopilot-related listing and export commands.
+  Intune / Autopilot queries and exports.
 
 - `scripts/entra.ps1`  
-  Entra / Graph-related queries for users and groups.
+  Entra / Graph queries for users and groups.
 
 - `scripts/exchange.ps1`  
-  Basic Exchange admin tasks for audit status.
+  Exchange admin tasks.
 
 - `scripts/sharepoint.ps1`  
-  Basic PnP-based SharePoint site context and site information.
+  SharePoint operations via PnP.
 
 ## Base modules
 
-The toolkit relies on:
+The toolkit uses:
 
-- ExchangeOnlineManagement  
-- Microsoft Graph PowerShell submodules  
-- MicrosoftTeams  
-- PnP.PowerShell  
+- `ExchangeOnlineManagement`
+- `Microsoft.Graph.Authentication`
+- `Microsoft.Graph.Users`
+- `Microsoft.Graph.Groups`
+- `Microsoft.Graph.Identity.DirectoryManagement`
+- `Microsoft.Graph.DeviceManagement`
+- `Microsoft.Graph.DeviceManagement.Enrollment`
+- `Microsoft.Graph.Identity.SignIns`
+- `MicrosoftTeams`
+- `PnP.PowerShell`
 
 Optional:
 
-- Az.Accounts  
-- Microsoft.Graph.Beta.DeviceManagement.Enrollment  
+- `Az.Accounts`
+- `Microsoft.Graph.Beta.DeviceManagement.Enrollment`
 
 ## Why these modules
 
-The modules in this toolkit are selected to cover the core administrative areas in a Microsoft 365 environment, using modern and supported authentication methods.
+The modules are selected to cover the core Microsoft 365 workloads while keeping responsibilities separated.
 
-Each module is responsible for a specific workload:
+- **ExchangeOnlineManagement**  
+  Used for Exchange administration such as audit settings, mailbox-related administration, and Exchange-specific operations.
 
-- ExchangeOnlineManagement is used for Exchange Online administration such as audit logging, mailbox configuration, and mail flow.  
-  It uses modern authentication via Connect-ExchangeOnline and provides access to Exchange-specific cmdlets that are not available in Microsoft Graph.
+- **Microsoft Graph PowerShell**  
+  Used for identity, users, groups, and devices. This is the main interface for Entra ID, Intune device data, and directory-driven administration.
 
-- Microsoft Graph PowerShell is used for identity, devices, and directory data.  
-  It connects using Connect-MgGraph and provides a unified API for working with users, groups, and Intune-managed devices across Microsoft 365.
+- **MicrosoftTeams**  
+  Used for Teams-specific administration such as tenant settings and policy work.
 
-- MicrosoftTeams is used for Teams-specific administration, such as tenant settings and policy management.  
-  It connects using Connect-MicrosoftTeams and exposes cmdlets that are not fully available through Graph.
+- **PnP.PowerShell**  
+  Used for SharePoint administration and automation using a modern cross-platform approach that works well with PowerShell 7.
 
-- PnP.PowerShell is used for SharePoint Online administration and automation.  
-  It provides a modern, cross-platform way to work with SharePoint that is better suited for PowerShell 7 and macOS than legacy modules.
-
-Together, these modules provide coverage across the main administrative workloads in Microsoft 365 while keeping responsibilities clearly separated.
+Together, these modules provide coverage across identity, messaging, collaboration, and content.
 
 ## PnP PowerShell
 
-PnP PowerShell is used for SharePoint administration and automation.  
-It provides a modern, cross-platform way of working with SharePoint Online, especially from PowerShell 7 and macOS where legacy modules are limited.
+PnP is used for SharePoint administration and automation.
 
-It is required in this toolkit for:
+PnP requires your own Entra ID app registration.
 
-- accessing SharePoint site data  
-- managing site context and structure  
-- enabling automation scenarios  
+Run:
 
-### Setup PnP (one-time)
-
-PnP requires your own Entra ID app registration for authentication.
-
-Run the following command in PowerShell:
-
-```zsh
+```powershell
 Register-PnPEntraIDAppForInteractiveLogin -ApplicationName "PnP.PowerShell" -Tenant <your-tenant-id>
 ```
 
-A browser window will open:
+After sign-in, copy the App ID and add it to `config.ps1`:
 
-- sign in with your admin account  
-- accept permissions  
-
-After completion, you will get:
-
-- Azure App ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-
-Copy this value and add it to config.ps1:
-
-- PnPClientId = 'your-app-id'
-
-### Usage
-
-PnP is automatically used when running:
-
-```zsh
-pwsh ./connect.ps1
+```powershell
+PnPClientId = 'your-app-id'
 ```
+
+PnP is then used automatically by `connect.ps1`.
 
 ## Enterprise baseline covered
 
-This toolkit provides coverage across the main administrative workloads in a Microsoft 365 environment:
+This toolkit covers the main administrative workloads in a Microsoft 365 environment:
 
-- Exchange Online administration and auditing
-- Entra ID / Graph queries  
-- Intune managed devices via Graph  
-- Windows Autopilot device identities via Graph  
-- Teams connectivity and validation  
-- SharePoint Online via PnP PowerShell  
+- Exchange administration and audit
+- Entra ID / Graph queries
+- Intune managed devices
+- Windows Autopilot device identities
+- Teams connectivity and validation
+- SharePoint administration via PnP
 
 ## Setup on a new device
 
-### 1. Clone the repo
+### 1. Clone the repository
 
- ```zsh
- git clone https://github.com/JNicolin/IT-admin-toolkit.git  
- cd IT-admin-toolkit
- ```
+```bash
+git clone https://github.com/JNicolin/IT-admin-toolkit.git
+cd IT-admin-toolkit
+```
 
-### 2. Create local config
+### 2. Create local configuration
 
-Copy config file:
+```bash
+cp config.sample.ps1 config.ps1
+```
 
- ```zsh
- cp config.sample.ps1 config.ps1
- ```
+Edit `config.ps1` and fill in:
 
-Edit config.ps1 and fill in:
+```powershell
+TenantId    = 'your-tenant-id'
+AdminUpn    = 'your-admin-upn'
+PnPClientId = 'your-app-id'
+```
 
-- TenantId    = 'your-tenant-id'  
-- AdminUpn    = 'your-admin-upn'  
-- PnPClientId = 'your-app-id'
-
-Note: If you have not created a PnP app registration yet, follow the steps in the PnP PowerShell section above before continuing.
+If the PnP app registration has not been created yet, complete the PnP setup section above first.
 
 ### 3. Install modules
 
-This is a one time per device action. Installation of modules. No need to run it again after a device restart. 
+Run once per device:
 
-```zsh 
-pwsh ./bootstrap.ps1 
+```powershell
+pwsh ./bootstrap.ps1
 ```
 
 ### 4. Connect to services
 
-This action shall be completed at each new session. After a restart of device or login of user. 
+Run once for each new session:
 
-```zsh
+```powershell
 pwsh ./connect.ps1
 ```
 
-### 5. Validate setup
+### 5. Validate the setup
 
-```zsh
+```powershell
 pwsh ./validate.ps1
 ```
 
-This will authenticate and connect:
-
-- Exchange Online  
-- Microsoft Graph  
-- Microsoft Teams  
-- SharePoint (PnP)
-
 ## Daily workflow
 
-Use this workflow for day-to-day usage of the toolkit.
+### Important
 
-### 1. Open the repository
+All operational scripts must run in the same PowerShell session.
 
-Navigate to your local repository:
+Do **not** run scripts by prefixing them with `pwsh` once you are already inside PowerShell, because that starts a new session and existing connections will not be reused.
 
-```zsh
-cd IT-admin-toolkit
+### 1. Start PowerShell
+
+```powershell
+pwsh
 ```
 
-### 2. Update from GitHub (recommended)
+### 2. Connect in the same session
 
-Pull the latest changes before starting work:
-
-```zsh
-git pull
+```powershell
+. ./connect.ps1
 ```
 
-### 3. Connect to services
+This connects:
 
-Start your session:
-
-```zsh
-pwsh ./connect.ps1
-```
-
-This will authenticate and connect:
-
-- Exchange Online  
-- Microsoft Graph  
-- Microsoft Teams  
+- Microsoft Graph
+- Exchange Online
+- Microsoft Teams
 - SharePoint (PnP)
 
-### 4. Run scripts
+### 3. Run operational scripts
 
 Examples:
 
-```zsh
-pwsh ./scripts/autopilot.ps1 -ListAutopilotDevices  
-pwsh ./scripts/entra.ps1 -ListUsers  
-pwsh ./scripts/exchange.ps1 -ShowAuditStatus  
+```powershell
+./scripts/entra.ps1 -ListUsers
+./scripts/entra.ps1 -ListGroups
+./scripts/entra.ps1 -SearchUser -SearchText Johan
+./scripts/autopilot.ps1 -ListAutopilotDevices
+./scripts/exchange.ps1 -ShowAuditStatus
+./scripts/sharepoint.ps1 -ShowWeb
 ```
 
-### 5. Save changes (if you modify scripts)
+### 4. Export results
 
-```zsh
-git add .  
-git commit -m "Describe your change"  
-git push  
+```powershell
+./scripts/entra.ps1 -ListUsers -Export
 ```
-### Notes
 
-- bootstrap.ps1 is only needed on first setup or when adding modules  
-- connect.ps1 should be run for each new session  
-- config.ps1 is local and should not be committed to GitHub. It is therefor noted in the .gitignore file
+### 5. Update the repository
+
+```bash
+git pull
+```
+
+### 6. Save changes
+
+```bash
+git add .
+git commit -m "Describe your change"
+git push
+```
+
+## Script overview
+
+### `scripts/autopilot.ps1`
+
+Used for Intune / Autopilot lookups.
+
+Examples:
+
+```powershell
+./scripts/autopilot.ps1 -ListAutopilotDevices
+./scripts/autopilot.ps1 -SerialNumber ABC123
+./scripts/autopilot.ps1 -ListManagedDevices
+```
+
+### `scripts/entra.ps1`
+
+Used for user, group, and membership lookups in Entra ID.
+
+Examples:
+
+```powershell
+./scripts/entra.ps1 -ListUsers
+./scripts/entra.ps1 -UserId user@contoso.com
+./scripts/entra.ps1 -ListGroups
+./scripts/entra.ps1 -GroupId <group-id> -ListGroupMembers
+```
+
+### `scripts/exchange.ps1`
+
+Used for Exchange audit-related checks.
+
+Examples:
+
+```powershell
+./scripts/exchange.ps1 -ShowAuditStatus
+./scripts/exchange.ps1 -EnableUnifiedAuditLog
+```
+
+### `scripts/sharepoint.ps1`
+
+Used for SharePoint site context and PnP-based operations.
+
+Examples:
+
+```powershell
+./scripts/sharepoint.ps1 -ShowWeb
+./scripts/sharepoint.ps1 -Reconnect -SiteUrl https://contoso.sharepoint.com/sites/example -ShowWeb
+```
+
+## Notes
+
+- `bootstrap.ps1` is only needed during initial setup or when adding modules
+- `connect.ps1` must be run once per PowerShell session
+- `config.ps1` is local and must not be committed
+- `config.ps1` should stay excluded through `.gitignore`
+
+## Troubleshooting
+
+### Graph authentication on macOS / Linux
+
+`connect.ps1` uses device code authentication for Microsoft Graph on macOS and Linux to avoid known interactive browser authentication issues.
+
+If Graph authentication behaves unexpectedly, start a fresh terminal session and reconnect.
+
+### Separate PowerShell sessions
+
+If a script says authentication is missing even though `connect.ps1` was run earlier, the script was likely started in a new PowerShell session.
+
+Correct pattern:
+
+```powershell
+pwsh
+. ./connect.ps1
+./scripts/entra.ps1 -ListUsers
+```
+
+Incorrect pattern:
+
+```powershell
+pwsh ./connect.ps1
+pwsh ./scripts/entra.ps1 -ListUsers
+```
+
+## Recommended next additions
+
+Logical next scripts to add:
+
+- `scripts/intune.ps1`
+- `scripts/teams.ps1`
+- `scripts/mailflow.ps1`
+- `scripts/licenses.ps1`
+- `scripts/reports/`
+
+## Security and operations
+
+- do not commit `config.ps1`
+- keep Graph scopes as narrow as possible
+- use delegated authentication for manual admin work
+- use app or certificate authentication for automation later
+
+## Minimal repo layout
+
+```text
+it-admin-toolkit/
+  bootstrap.ps1
+  connect.ps1
+  validate.ps1
+  disconnect.ps1
+  common.ps1
+  config.sample.ps1
+  config.ps1
+  scripts/
+    autopilot.ps1
+    entra.ps1
+    exchange.ps1
+    sharepoint.ps1
+```

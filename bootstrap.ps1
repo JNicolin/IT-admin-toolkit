@@ -1,7 +1,8 @@
 [CmdletBinding()]
 param(
     [switch]$IncludeAzAccounts,
-    [switch]$IncludeBetaGraph
+    [switch]$IncludeBetaGraph,
+    [switch]$ResetGraphModules
 )
 
 $scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -12,6 +13,34 @@ Write-Info 'Starting bootstrap'
 Write-Info "PowerShell version: $($PSVersionTable.PSVersion)"
 Write-Info "User: $([Environment]::UserName)"
 Write-Info "Host OS: $([System.Runtime.InteropServices.RuntimeInformation]::OSDescription)"
+
+if ($ResetGraphModules) {
+    Write-Step 'Resetting installed Microsoft Graph modules'
+
+    $graphModuleNames = @(
+        'Microsoft.Graph',
+        'Microsoft.Graph.Authentication',
+        'Microsoft.Graph.Users',
+        'Microsoft.Graph.Groups',
+        'Microsoft.Graph.Identity.DirectoryManagement',
+        'Microsoft.Graph.DeviceManagement',
+        'Microsoft.Graph.DeviceManagement.Enrollment',
+        'Microsoft.Graph.Identity.SignIns'
+    )
+
+    foreach ($moduleName in $graphModuleNames) {
+        $installed = Get-InstalledModule -Name $moduleName -ErrorAction SilentlyContinue
+        if ($installed) {
+            try {
+                Uninstall-Module -Name $moduleName -AllVersions -Force -ErrorAction Stop
+                Write-Ok "Removed module: $moduleName"
+            }
+            catch {
+                Write-WarnLine "Could not remove $moduleName. Continuing. $_"
+            }
+        }
+    }
+}
 
 $coreModules = @(
     @{ Name = 'ExchangeOnlineManagement'; AllowClobber = $true },
