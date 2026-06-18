@@ -2,8 +2,12 @@
 param(
     [switch]$ListAutopilotDevices,
     [switch]$ListManagedDevices,
+    [switch]$ListCompliantDevices,
+    [switch]$ListNonCompliantDevices,
+    [switch]$ListDevicesWithoutUser,
     [string]$SerialNumber,
     [int]$Top = 25,
+    [switch]$Table,
     [switch]$Export
 )
 
@@ -16,34 +20,149 @@ if (-not (Test-CommandAvailable -Name 'Get-MgContext')) {
 }
 
 $results = $null
+$view = @()
 
+# ✅ Autopilot devices
 if ($ListAutopilotDevices -or $SerialNumber) {
     Write-Step 'Getting Windows Autopilot device identities'
+
     $params = @{
         All      = $true
-        Property = @('id','serialNumber','manufacturer','model','groupTag','deploymentProfileAssignmentStatus','lastContactedDateTime','managedDeviceId','displayName')
+        Property = @(
+            'displayName',
+            'serialNumber',
+            'manufacturer',
+            'model',
+            'groupTag',
+            'deploymentProfileAssignmentStatus',
+            'lastContactedDateTime'
+        )
     }
+
     if ($SerialNumber) {
         $params.Filter = "contains(serialNumber,'$SerialNumber')"
     }
 
     $results = Get-MgDeviceManagementWindowsAutopilotDeviceIdentity @params |
-        Select-Object DisplayName, SerialNumber, Manufacturer, Model, GroupTag, DeploymentProfileAssignmentStatus, ManagedDeviceId, LastContactedDateTime |
+        Select-Object DisplayName, SerialNumber, Manufacturer, Model, GroupTag, DeploymentProfileAssignmentStatus, LastContactedDateTime |
         Select-Object -First $Top
+
+    $view = @(
+        'DisplayName',
+        'SerialNumber',
+        'Manufacturer',
+        'Model',
+        'GroupTag',
+        'DeploymentProfileAssignmentStatus',
+        'LastContactedDateTime'
+    )
 }
+
+# ✅ Managed devices
 elseif ($ListManagedDevices) {
     Write-Step 'Getting Intune managed devices'
-    $results = Get-MgDeviceManagementManagedDevice -All -Property 'id,deviceName,operatingSystem,complianceState,userPrincipalName,lastSyncDateTime' |
-        Select-Object DeviceName, OperatingSystem, ComplianceState, UserPrincipalName, LastSyncDateTime, Id |
-        Select-Object -First $Top
+
+    $results = Get-MgDeviceManagementManagedDevice -All -Property @(
+        'deviceName',
+        'operatingSystem',
+        'complianceState',
+        'userPrincipalName',
+        'lastSyncDateTime',
+        'id'
+    ) |
+    Select-Object DeviceName, OperatingSystem, ComplianceState, UserPrincipalName, LastSyncDateTime, Id |
+    Select-Object -First $Top
+
+    $view = @(
+        'DeviceName',
+        'OperatingSystem',
+        'ComplianceState',
+        'UserPrincipalName',
+        'LastSyncDateTime',
+        'Id'
+    )
 }
+
+# ✅ Compliant devices
+elseif ($ListCompliantDevices) {
+    Write-Step 'Getting compliant devices'
+
+    $results = Get-MgDeviceManagementManagedDevice -Filter "complianceState eq 'compliant'" -All -Property @(
+        'deviceName',
+        'operatingSystem',
+        'userPrincipalName',
+        'lastSyncDateTime',
+        'id'
+    ) |
+    Select-Object DeviceName, OperatingSystem, UserPrincipalName, LastSyncDateTime, Id |
+    Select-Object -First $Top
+
+    $view = @(
+        'DeviceName',
+        'OperatingSystem',
+        'UserPrincipalName',
+        'LastSyncDateTime',
+        'Id'
+    )
+}
+
+# ✅ Non-compliant devices
+elseif ($ListNonCompliantDevices) {
+    Write-Step 'Getting non-compliant devices'
+
+    $results = Get-MgDeviceManagementManagedDevice -Filter "complianceState ne 'compliant'" -All -Property @(
+        'deviceName',
+        'operatingSystem',
+        'complianceState',
+        'userPrincipalName',
+        'lastSyncDateTime',
+        'id'
+    ) |
+    Select-Object DeviceName, OperatingSystem, ComplianceState, UserPrincipalName, LastSyncDateTime, Id |
+    Select-Object -First $Top
+
+    $view = @(
+        'DeviceName',
+        'OperatingSystem',
+        'ComplianceState',
+        'UserPrincipalName',
+        'LastSyncDateTime',
+        'Id'
+    )
+}
+
+# ✅ Devices without user
+elseif ($ListDevicesWithoutUser) {
+    Write-Step 'Getting devices without assigned user'
+
+    $results = Get-MgDeviceManagementManagedDevice -All -Property @(
+        'deviceName',
+        'operatingSystem',
+        'userPrincipalName',
+        'lastSyncDateTime',
+        'id'
+    ) |
+    Where-Object { -not $_.UserPrincipalName } |
+    Select-Object DeviceName, OperatingSystem, LastSyncDateTime, Id |
+    Select-Object -First $Top
+
+    $view = @(
+        'DeviceName',
+        'OperatingSystem',
+        'LastSyncDateTime',
+        'Id'
+    )
+}
+
 else {
-    Write-WarnLine 'No action selected. Use -ListAutopilotDevices, -ListManagedDevices or -SerialNumber.'
+    Write-WarnLine 'No action selected. Use -ListAutopilotDevices, -ListManagedDevices, -ListCompliantDevices, -ListNonCompliantDevices, -ListDevicesWithoutUser or -SerialNumber.'
     return
 }
 
-$results | Format-Table -AutoSize
+# ✅ Central output
+Show-ToolkitOutput -Data $results -View $view -Table:$Table
 
+# ✅ Export
 if ($Export) {
-    Export-ToolkitCsv -InputObject $results -Name 'autopilot-devices'
+    Export-ToolkitCsv -InputObject $results -Name 'autopilot-devices' -ScriptName 'autopilot'
 }
