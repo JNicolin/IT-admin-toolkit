@@ -35,6 +35,7 @@ pwsh
 - clear separation between installation, connection, and operational scripts
 - simple per-tenant local configuration
 - easy to extend without heavy frameworks
+- consistent output handling via shared helper functions
 
 In this toolkit:
 
@@ -142,6 +143,18 @@ This toolkit covers the main administrative workloads in a Microsoft 365 environ
 - Windows Autopilot device identities
 - Teams connectivity and validation
 - SharePoint administration via PnP
+
+## Output model
+All scripts use a shared helper:
+
+- Show-ToolkitOutput
+- Export-ToolkitCsv
+
+This ensures:
+
+- consistent formatting across scripts
+- optional table view (-Table)
+- unified export behavior
 
 ## Setup on a new device
 
@@ -279,7 +292,13 @@ Examples:
 
 ### `scripts/exchange.ps1`
 
-Used for Exchange audit-related checks.
+Used for Exchange administration and governance:
+
+- mailboxes and shared mailboxes
+- mailbox permissions and access review
+- audit log queries
+- mail flow rules and connectors
+- tenant audit configuration
 
 Examples:
 
@@ -290,7 +309,14 @@ Examples:
 
 ### `scripts/sharepoint.ps1`
 
-Used for SharePoint site context and PnP-based operations.
+SharePoint administration and governance:
+
+- site and tenant site overview
+- site collection administrators
+- SharePoint groups and membership
+- lists and libraries
+- permission inheritance checks
+- detection of unique permissions (governance)
 
 Examples:
 
@@ -298,6 +324,17 @@ Examples:
 ./scripts/sharepoint.ps1 -ShowWeb
 ./scripts/sharepoint.ps1 -Reconnect -SiteUrl https://contoso.sharepoint.com/sites/example -ShowWeb
 ```
+
+## Governance use cases
+
+This toolkit can be used for:
+
+- identifying groups without owners  
+- reviewing mailbox permissions  
+- detecting unique SharePoint permissions  
+- finding unmanaged or unassigned devices  
+- auditing tenant configuration and access patterns 
+
 
 ## Notes
 
