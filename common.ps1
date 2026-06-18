@@ -108,3 +108,29 @@ function Export-ToolkitCsv {
     $InputObject | Export-Csv -Path $file -NoTypeInformation -Encoding UTF8
     Write-Ok "Exported: $file"
 }
+function Show-ToolkitOutput {
+    param(
+        $Data,
+        [string[]]$View,
+        [switch]$Table
+    )
+
+    if (-not $Data) {
+        Write-WarnLine 'No results returned.'
+        return
+    }
+
+    $output = if ($View) {
+        $Data | Select-Object $View
+    }
+    else {
+        $Data
+    }
+
+    if ($Table) {
+        $output | Format-Table -AutoSize
+    }
+    else {
+        $output | Format-List
+    }
+}
